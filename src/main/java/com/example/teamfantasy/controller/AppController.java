@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class AppController {
@@ -45,6 +46,16 @@ public class AppController {
     @GetMapping(path = "/stuff")
     public List<String> stuff(){
         return appService.justTeamsAndPoints();
+    }
+
+    @GetMapping(path = "/main")
+    public List<Users> initialCall() {
+        return appService.initalCall();
+    }
+
+    @GetMapping(path = "/rankings")
+    public Map<String, Integer> getRankings() {
+        return appService.getRankings();
     }
 
 }

@@ -33,6 +33,84 @@ public class AppService {
     @Autowired
     TeamsRepository teamsRepository;
 
+    public List<Users> initalCall() {
+        List<Users> users = (List<Users>) usersRepository.findAll();
+        int total;
+
+        for(Users user : users){
+            total = 0;
+            for(Teams team : user.getTeams()){
+                total = total + team.getPoints();
+            }
+            user.setTotalPoints(total);
+        }
+        return users;
+    }
+
+    public Map<String, Integer> getRankings() {
+        Map<String, Integer> rankingMap = new HashMap<>();
+        List<Users> users = initalCall();
+        List<Teams> undraftedTeams = new ArrayList<>();
+        for(Users user: users) {
+            if(user.getName().equals("Undrafted")){
+                undraftedTeams.addAll(user.getTeams());
+            }
+        }
+        int winCount;
+        int worseTeams1Count;
+        int worseTeams2Count;
+        int team1WinCount = 0;
+        for(Character character: undraftedTeams.get(0).getRecord()){
+            if(character.equals('w')){
+                team1WinCount++;
+            }
+        }
+        int team2WinCount = 0;
+        for(Character character: undraftedTeams.get(1).getRecord()){
+            if(character.equals('w')){
+                team2WinCount++;
+            }
+        }
+        int runningNegTotal1;
+        int runningNegTotal2;
+        for(Users user: users){
+            if(user.getName().equals("Undrafted")){
+                continue;
+            }
+            System.out.println(user.getName() + " has: " + user.getTotalPoints());
+            worseTeams1Count = 0;
+            worseTeams2Count = 0;
+            runningNegTotal1 = 0;
+            runningNegTotal2 = 0;
+
+            for(Teams team: user.getTeams()){
+                winCount = 0;
+
+                for(Character character: team.getRecord()){
+                    if (character.equals('w')){
+                        winCount++;
+                    }
+                }
+                if(team1WinCount > winCount){
+                    runningNegTotal1 = runningNegTotal1 + ((team1WinCount-winCount) * 10);
+                    worseTeams1Count++;
+                }
+                if(team2WinCount > winCount) {
+                    runningNegTotal2 = runningNegTotal2 + ((team2WinCount-winCount) * 10);
+                    worseTeams2Count++;
+                }
+            }
+            int totalNeg = (runningNegTotal1 * worseTeams1Count) + (runningNegTotal2 * worseTeams2Count);
+            System.out.println(user.getName() + " is getting: " + totalNeg + " in penalty points");
+
+            rankingMap.put(user.getName(), (int) (user.getTotalPoints()-totalNeg));
+        }
+
+        return rankingMap;
+
+
+    }
+
     public List<String> getAllUsers(){
         List<String> responses = new ArrayList<>();
 
